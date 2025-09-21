@@ -1,0 +1,39 @@
+main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+h1 {
+    margin-bottom: 1.5rem;
+}
+
+#employee-directory h4,
+#organization-directory h4 {
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    border: 0.5px solid #003366;
+    background: #e6f0fa;
+    padding: 0.5rem 1rem;
+    border-radius: 6px 6px 0 0;
+    display: inline-block;
+    cursor: pointer;
+}
+
+
+
+#employee-directory ul,
+#organization-directory ul {
+    margin: 0 0 1.5rem 0;
+    padding: 0 0 0 1.5rem;
+    border: 1px solid #003366;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 0 0 6px 6px;
+    margin-bottom: 2rem;
+}
+
+#employee-directory li,
+#organization-directory li {
+    margin-left: 10px;
+}

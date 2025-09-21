@@ -1,0 +1,12 @@
+header {
+    background: #003366;
+    color: #fff;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+}
+
+.greeting {
+    text-align: center;
+    margin: 1rem 0 0 0;
+    font-size: 1.1rem;
+}

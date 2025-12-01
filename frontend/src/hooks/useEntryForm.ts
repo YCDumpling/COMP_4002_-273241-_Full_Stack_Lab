@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { getEmployeeDepartments, addEmployee } from '../repositories/employeeRepository.ts';
 import { getRoleDepartments, addRole } from '../repositories/roleRepository.ts';
 import { validStaffService } from '../services/validStaffService.ts';
@@ -11,13 +12,17 @@ export function useEntryForm(entryMode: EntryMode) {
   const [errors, setErrors] = useState<{ name?: string; department?: string; role?: string }>({});
   const [departmentOptions, setDepartmentOptions] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     (async () => {
-      const departments = entryMode === 'employee' ? await getEmployeeDepartments() : await getRoleDepartments();
+      const token = await getToken();
+      const departments = entryMode === 'employee' 
+        ? await getEmployeeDepartments(token || undefined) 
+        : await getRoleDepartments(token || undefined);
       setDepartmentOptions(departments);
     })();
-  }, [entryMode]);
+  }, [entryMode, getToken]);
 
   const submit = useCallback(async () => {
     setIsSubmitting(true);
@@ -28,10 +33,11 @@ export function useEntryForm(entryMode: EntryMode) {
           : await validStaffService.validateRole(textValue, selectedDepartment);
       setErrors(result.messages);
       if (!result.isValid) return false;
+      const token = await getToken();
       if (entryMode === 'employee') {
-        await addEmployee(selectedDepartment, textValue);
+        await addEmployee(selectedDepartment, textValue, token || undefined);
       } else {
-        await addRole(selectedDepartment, textValue);
+        await addRole(selectedDepartment, textValue, token || undefined);
       }
       setTextValue('');
       setSelectedDepartment('');
@@ -39,7 +45,7 @@ export function useEntryForm(entryMode: EntryMode) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [entryMode, textValue, selectedDepartment]);
+  }, [entryMode, textValue, selectedDepartment, getToken]);
 
   return {
     textValue,

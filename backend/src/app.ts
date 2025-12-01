@@ -16,7 +16,12 @@ app.use(express.json());
 app.use(cors(corsOptions));
 
 // add clerk middleware
-app.use(clerkMiddleware());
+app.use(
+  clerkMiddleware({
+    publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+    secretKey: process.env.CLERK_SECRET_KEY,
+  })
+);
 
 // Routes
 app.get("/", (req, res) => {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
 import AddForm from '../form/AddForm';
 import { getRoleDirectory } from '../../repositories/roleRepository';
 import useEntryForm from '../../hooks/useEntryForm';
@@ -12,21 +13,24 @@ export function OrganizationDirectoryComponent() {
   const [expandedDepartmentMap, setExpandedDepartmentMap] = useState<Record<string, boolean>>({});
   const [searchParams] = useSearchParams();
   const departmentFilter = searchParams.get('value');
+  const { getToken } = useAuth();
 
   const form = useEntryForm('role');
 
   useEffect(() => {
     (async () => {
-      const data = await getRoleDirectory();
+      const token = await getToken();
+      const data = await getRoleDirectory(token || undefined);
       setRoleDirectory(data);
       setIsLoading(false);
     })();
-  }, []);
+  }, [getToken]);
 
   const handleSubmit = async () => {
     const ok = await form.submit();
     if (ok) {
-      const data = await getRoleDirectory();
+      const token = await getToken();
+      const data = await getRoleDirectory(token || undefined);
       setRoleDirectory(data);
     }
     return ok;

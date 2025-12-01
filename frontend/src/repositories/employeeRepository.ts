@@ -2,9 +2,12 @@ export type EmployeeDirectoryMap = Record<string, string[]>;
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
-export async function getEmployeeDirectory(): Promise<EmployeeDirectoryMap> {
+export async function getEmployeeDirectory(token?: string): Promise<EmployeeDirectoryMap> {
   try {
-    const response = await fetch(`${API_BASE_URL}/employees`);
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    const response = await fetch(`${API_BASE_URL}/employees`, { headers });
     if (!response.ok) throw new Error('Failed to fetch employees');
     return await response.json();
   } catch (error) {
@@ -13,9 +16,12 @@ export async function getEmployeeDirectory(): Promise<EmployeeDirectoryMap> {
   }
 }
 
-export async function getEmployeeDepartments(): Promise<string[]> {
+export async function getEmployeeDepartments(token?: string): Promise<string[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/employees/departments`);
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    const response = await fetch(`${API_BASE_URL}/employees/departments`, { headers });
     if (!response.ok) throw new Error('Failed to fetch departments');
     return await response.json();
   } catch (error) {
@@ -24,9 +30,12 @@ export async function getEmployeeDepartments(): Promise<string[]> {
   }
 }
 
-export async function getEmployeesByDepartment(departmentName: string): Promise<string[]> {
+export async function getEmployeesByDepartment(departmentName: string, token?: string): Promise<string[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/employees/department/${encodeURIComponent(departmentName)}`);
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    const response = await fetch(`${API_BASE_URL}/employees/department/${encodeURIComponent(departmentName)}`, { headers });
     if (!response.ok) throw new Error('Failed to fetch employees by department');
     return await response.json();
   } catch (error) {
@@ -35,11 +44,14 @@ export async function getEmployeesByDepartment(departmentName: string): Promise<
   }
 }
 
-export async function addEmployee(departmentName: string, employeeName: string): Promise<EmployeeDirectoryMap> {
+export async function addEmployee(departmentName: string, employeeName: string, token?: string): Promise<EmployeeDirectoryMap> {
   try {
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
     const response = await fetch(`${API_BASE_URL}/employees`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ department: departmentName, name: employeeName })
     });
     if (!response.ok) throw new Error('Failed to add employee');

@@ -2,9 +2,12 @@ export type RoleDirectoryMap = Record<string, string[]>;
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
-export async function getRoleDirectory(): Promise<RoleDirectoryMap> {
+export async function getRoleDirectory(token?: string): Promise<RoleDirectoryMap> {
   try {
-    const response = await fetch(`${API_BASE_URL}/roles`);
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    const response = await fetch(`${API_BASE_URL}/roles`, { headers });
     if (!response.ok) throw new Error('Failed to fetch roles');
     return await response.json();
   } catch (error) {
@@ -13,9 +16,12 @@ export async function getRoleDirectory(): Promise<RoleDirectoryMap> {
   }
 }
 
-export async function getRoleDepartments(): Promise<string[]> {
+export async function getRoleDepartments(token?: string): Promise<string[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/roles/departments`);
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    const response = await fetch(`${API_BASE_URL}/roles/departments`, { headers });
     if (!response.ok) throw new Error('Failed to fetch departments');
     return await response.json();
   } catch (error) {
@@ -24,9 +30,12 @@ export async function getRoleDepartments(): Promise<string[]> {
   }
 }
 
-export async function getRolesByDepartment(departmentName: string): Promise<string[]> {
+export async function getRolesByDepartment(departmentName: string, token?: string): Promise<string[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/roles/department/${encodeURIComponent(departmentName)}`);
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    const response = await fetch(`${API_BASE_URL}/roles/department/${encodeURIComponent(departmentName)}`, { headers });
     if (!response.ok) throw new Error('Failed to fetch roles by department');
     return await response.json();
   } catch (error) {
@@ -35,11 +44,14 @@ export async function getRolesByDepartment(departmentName: string): Promise<stri
   }
 }
 
-export async function addRole(departmentName: string, roleName: string): Promise<RoleDirectoryMap> {
+export async function addRole(departmentName: string, roleName: string, token?: string): Promise<RoleDirectoryMap> {
   try {
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
     const response = await fetch(`${API_BASE_URL}/roles`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ department: departmentName, name: roleName })
     });
     if (!response.ok) throw new Error('Failed to add role');

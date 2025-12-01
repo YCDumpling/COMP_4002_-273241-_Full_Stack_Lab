@@ -4,9 +4,10 @@ import { CorsOptions } from "cors";
 const corsOptions: CorsOptions = {
     // throw an error if the request does not come from the list of allowed origins
     origin: function(origin, callback) {
-        const allowedOrigins = [process.env.FRONTEND_URL];
-
-        if(allowedOrigins.includes(origin) || !origin) {
+        // Allow any localhost port in development
+        if (!origin || origin.match(/^http:\/\/localhost:\d+$/)) {
+            callback(null, true);
+        } else if (origin === process.env.FRONTEND_URL) {
             callback(null, true);
         } else {
             callback(new Error("Not allowed by CORS restriction"), false);

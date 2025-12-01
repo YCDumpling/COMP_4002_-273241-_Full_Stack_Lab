@@ -24,3 +24,10 @@ model Role {
   name       String
   department String
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  clerkId   String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

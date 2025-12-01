@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { clerkMiddleware } from "@clerk/express";
 import employeeRoutes from "./routes/employeeRoutes";
 import roleRoutes from "./routes/roleRoutes";
 import corsOptions from "./config/cors";
@@ -13,6 +14,9 @@ app.use(express.json());
 
 //add cors middleware
 app.use(cors(corsOptions));
+
+// add clerk middleware
+app.use(clerkMiddleware());
 
 // Routes
 app.get("/", (req, res) => {

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { clerkMiddleware } from "@clerk/express";
 import employeeRoutes from "./routes/employeeRoutes";
 import roleRoutes from "./routes/roleRoutes";
+import seedRoutes from "./routes/seedRoutes";
 import corsOptions from "./config/cors";
 
 dotenv.config();
@@ -30,5 +31,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/employees", employeeRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/seed", seedRoutes);
 
 export default app;

@@ -1,64 +1,81 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import type { Employee } from '../../interfaces/Employee';
 import AddForm from '../form/AddForm';
+import { getRoleDirectory } from '../../repositories/roleRepository';
+import useEntryForm from '../../hooks/useEntryForm';
+
+type RoleDirectoryMap = Record<string, string[]>;
 
 export function OrganizationDirectoryComponent() {
-  const [directory, setDirectory] = useState<Employee>({});
-  const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
+  const [roleDirectory, setRoleDirectory] = useState<RoleDirectoryMap>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [expandedDepartmentMap, setExpandedDepartmentMap] = useState<Record<string, boolean>>({});
   const [searchParams] = useSearchParams();
-  const value = searchParams.get("value");
+  const departmentFilter = searchParams.get('value');
+
+  const form = useEntryForm('role');
 
   useEffect(() => {
-    fetch('/data/leadershipAndManagement.json')
-      .then(res => res.json())
-        .then((data: Employee) => {
-        console.log('Fetched organization data:', data);
-        setDirectory(data);
-        setLoading(false);
-        })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+    (async () => {
+      const data = await getRoleDirectory();
+      setRoleDirectory(data);
+      setIsLoading(false);
+    })();
   }, []);
 
-  const handleAddRole = (department, role) => {
-    setDirectory(prev => ({
-      ...prev,
-      [department]: [...prev[department], role]
-    }));
+  const handleSubmit = async () => {
+    const ok = await form.submit();
+    if (ok) {
+      const data = await getRoleDirectory();
+      setRoleDirectory(data);
+    }
+    return ok;
   };
 
-  if (loading) {
+  const allDepartments = Object.keys(roleDirectory);
+  const visibleDepartments = departmentFilter ? [departmentFilter] : allDepartments;
+
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  // get departments
-  const departments = value || Object.keys(directory);
-
   return (
     <section id="organization-directory">
-      {Object.entries(directory).map(([department, employees]) => (
-        <div key={department}>
-          <h4
-            onClick={() => setExpanded(prev => ({ ...prev, [department]: !prev[department] }))}
-          >{department}</h4>
-          {expanded[department] && (
-            <ul>
-              {employees.map(name => (
-                <li key={name}>{name}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
-      
-      <AddForm 
-        departments={departments} 
-        onAddItem={handleAddRole}
+      {visibleDepartments.map((departmentName) => {
+        const roles = roleDirectory[departmentName] ?? [];
+        return (
+          <div key={departmentName}>
+            <h4
+              onClick={() =>
+                setExpandedDepartmentMap((prev) => ({
+                  ...prev,
+                  [departmentName]: !prev[departmentName],
+                }))
+              }
+            >
+              {departmentName}
+            </h4>
+            {expandedDepartmentMap[departmentName] && (
+              <ul>
+                {roles.map((roleName) => (
+                  <li key={roleName}>{roleName}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })}
+
+      <AddForm
+        departmentOptions={form.departmentOptions}
         inputLabel="Role Name:"
+        textValue={form.textValue}
+        onTextChange={form.setTextValue}
+        selectedDepartment={form.selectedDepartment}
+        onDepartmentChange={form.setSelectedDepartment}
+        errors={form.errors}
+        onSubmit={handleSubmit}
+        isSubmitting={form.isSubmitting}
       />
     </section>
   );

@@ -1,44 +1,32 @@
-import { useState } from 'react';
 import './AddForm.css';
+import type { FormEvent } from 'react';
 
-function AddForm({ 
-  departments, 
-  onAddItem, 
-  inputLabel = ""
-}) {
-  const [name, setName] = useState('');
-  const [department, setDepartment] = useState('');
-  const [nameError, setNameError] = useState('');
+type AddFormProps = {
+  departmentOptions: string[];
+  inputLabel?: string;
+  textValue: string;
+  onTextChange: (value: string) => void;
+  selectedDepartment: string;
+  onDepartmentChange: (value: string) => void;
+  errors?: { name?: string; department?: string; role?: string };
+  onSubmit: () => Promise<boolean> | boolean;
+  isSubmitting?: boolean;
+};
 
-  const handleNameChange = (name: string) => {
-    setName(name);
-  };
-
-  const handleDepartmentChange = (department: string) => {
-    setDepartment(department);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-
-    if (name.length < 3) {
-      setNameError('Must be at least 3 characters');
-      return;
-    }
-    
-    if (!department) {
-      setNameError('Please select a department');
-      return;
-    }
-
-    // clear form
-    setNameError('');
-    setName('');
-    setDepartment('');
-    setNameError('');
-    // add the new item into the directory
-    onAddItem(department, name);
+function AddForm({
+  departmentOptions,
+  inputLabel = '',
+  textValue,
+  onTextChange,
+  selectedDepartment,
+  onDepartmentChange,
+  errors = {},
+  onSubmit,
+  isSubmitting = false,
+}: AddFormProps) {
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    await onSubmit();
   };
 
   return (
@@ -47,26 +35,38 @@ function AddForm({
       <form onSubmit={handleSubmit}>
         <div className="form-field">
           <label>{inputLabel}</label>
-          <input type="text" value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="Enter Name"/>
-          {/* display error if validation did not pass */}
-          {nameError && <div className="error-message">{nameError}</div>}
+          <input
+            type="text"
+            value={textValue}
+            onChange={(e) => onTextChange(e.currentTarget.value)}
+            placeholder="Enter Name"
+          />
+          {errors.name && <div className="error-message">{errors.name}</div>}
+          {errors.role && <div className="error-message">{errors.role}</div>}
         </div>
 
         <div className="form-field">
           <label>Department:</label>
           <select
-            value={department}
-            onChange={(e) => handleDepartmentChange(e.target.value)}
+            value={selectedDepartment}
+            onChange={(e) => onDepartmentChange(e.currentTarget.value)}
             required
           >
             <option value="">Select Department</option>
-            {departments.map(dept => (
-              <option key={dept} value={dept}>{dept}</option>
+            {departmentOptions.map((departmentName) => (
+              <option key={departmentName} value={departmentName}>
+                {departmentName}
+              </option>
             ))}
           </select>
+          {errors.department && (
+            <div className="error-message">{errors.department}</div>
+          )}
         </div>
 
-        <button  type="submit" > Add New</button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Adding...' : 'Add New'}
+        </button>
       </form>
     </div>
   );

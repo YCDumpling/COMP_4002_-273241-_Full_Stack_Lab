@@ -1,64 +1,82 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import type { Employee } from '../../interfaces/Employee';
 import AddForm from '../form/AddForm';
+import { getEmployeeDirectory } from '../../repositories/employeeRepository';
+import useEntryForm from '../../hooks/useEntryForm';
+
+type EmployeeDirectoryMap = Record<string, string[]>;
 
 export function EmployeeDirectoryComponent() {
-  const [directory, setDirectory] = useState<EmployeeDirectory>({});
-  const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
+  const [employeeDirectory, setEmployeeDirectory] = useState<EmployeeDirectoryMap>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [expandedDepartmentMap, setExpandedDepartmentMap] = useState<Record<string, boolean>>({});
   const [searchParams] = useSearchParams();
-  const value = searchParams.get("value");
+  const departmentFilter = searchParams.get('value');
+
+  const form = useEntryForm('employee');
 
   useEffect(() => {
-    fetch('/data/employees.json')
-      .then(res => res.json())
-        .then((data: Employee) => {
-        console.log('Fetched employee data:', data);
-        setDirectory(data);
-        setLoading(false);
-        })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+    (async () => {
+      const data = await getEmployeeDirectory();
+      setEmployeeDirectory(data);
+      setIsLoading(false);
+    })();
   }, []);
 
-  const handleAddEmployee = (department, name) => {
-    setDirectory(prev => ({
-      ...prev,
-      [department]: [...prev[department], name]
-    }));
+  const handleSubmit = async () => {
+    const ok = await form.submit();
+    if (ok) {
+      const data = await getEmployeeDirectory();
+      setEmployeeDirectory(data);
+    }
+    return ok;
   };
 
-  if (loading) {
+  // Always compute these values before any return so hook order is stable.
+  const allDepartments = Object.keys(employeeDirectory);
+  const visibleDepartments = departmentFilter ? [departmentFilter] : allDepartments;
+
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
-
-  const departments = value || Object.keys(directory);
-
   return (
     <section id="employee-directory">
-      {Object.entries(directory).map(([department, employees]) => (
-        <div key={department}>
-          <h4
-            onClick={() => setExpanded(prev => ({ ...prev, [department]: !prev[department] }))}
-          >{department}</h4>
-          {expanded[department] && (
-            <ul>
-              {employees.map(name => (
-                <li key={name}>{name}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
-      
-      <AddForm 
-        departments={departments} 
-        onAddItem={handleAddEmployee}
+      {visibleDepartments.map((departmentName) => {
+        const employees = employeeDirectory[departmentName] ?? [];
+        return (
+          <div key={departmentName}>
+            <h4
+              onClick={() =>
+                setExpandedDepartmentMap((prev) => ({
+                  ...prev,
+                  [departmentName]: !prev[departmentName],
+                }))
+              }
+            >
+              {departmentName}
+            </h4>
+            {expandedDepartmentMap[departmentName] && (
+              <ul>
+                {employees.map((employeeName) => (
+                  <li key={employeeName}>{employeeName}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })}
+
+      <AddForm
+        departmentOptions={form.departmentOptions}
         inputLabel="Employee Name:"
+        textValue={form.textValue}
+        onTextChange={form.setTextValue}
+        selectedDepartment={form.selectedDepartment}
+        onDepartmentChange={form.setSelectedDepartment}
+        errors={form.errors}
+        onSubmit={handleSubmit}
+        isSubmitting={form.isSubmitting}
       />
     </section>
   );

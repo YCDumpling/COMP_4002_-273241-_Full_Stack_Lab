@@ -1,0 +1,13 @@
+{
+  "name": "pixellriver-fullstack",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm:start:frontend\" \"npm:start:backend\"",
+    "start:frontend": "cd frontend && npm run dev",
+    "start:backend": "cd backend && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

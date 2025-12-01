@@ -1,40 +1,51 @@
 export type EmployeeDirectoryMap = Record<string, string[]>;
 
-let employeeDirectoryCache: EmployeeDirectoryMap | null = null;
-const EMPLOYEE_DATA_URL = '/data/employees.json';
-
-async function ensureEmployeeDirectoryLoaded(): Promise<EmployeeDirectoryMap> {
-  if (employeeDirectoryCache) {
-    return employeeDirectoryCache;
-  }
-  try {
-    const response = await fetch(EMPLOYEE_DATA_URL);
-    const data = (await response.json()) as EmployeeDirectoryMap;
-    employeeDirectoryCache = data ?? {};
-  } catch {
-    employeeDirectoryCache = {};
-  }
-  return employeeDirectoryCache;
-}
+const API_BASE_URL = 'http://localhost:3000/api';
 
 export async function getEmployeeDirectory(): Promise<EmployeeDirectoryMap> {
-  return ensureEmployeeDirectoryLoaded();
+  try {
+    const response = await fetch(`${API_BASE_URL}/employees`);
+    if (!response.ok) throw new Error('Failed to fetch employees');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching employees:', error);
+    return {};
+  }
 }
 
 export async function getEmployeeDepartments(): Promise<string[]> {
-  const directory = await ensureEmployeeDirectoryLoaded();
-  return Object.keys(directory);
+  try {
+    const response = await fetch(`${API_BASE_URL}/employees/departments`);
+    if (!response.ok) throw new Error('Failed to fetch departments');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching departments:', error);
+    return [];
+  }
 }
 
 export async function getEmployeesByDepartment(departmentName: string): Promise<string[]> {
-  const directory = await ensureEmployeeDirectoryLoaded();
-  return directory[departmentName] ?? [];
+  try {
+    const response = await fetch(`${API_BASE_URL}/employees/department/${encodeURIComponent(departmentName)}`);
+    if (!response.ok) throw new Error('Failed to fetch employees by department');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching employees by department:', error);
+    return [];
+  }
 }
 
 export async function addEmployee(departmentName: string, employeeName: string): Promise<EmployeeDirectoryMap> {
-  const directory = await ensureEmployeeDirectoryLoaded();
-  const list = directory[departmentName] ?? [];
-  directory[departmentName] = [...list, employeeName];
-  employeeDirectoryCache = { ...directory };
-  return employeeDirectoryCache;
+  try {
+    const response = await fetch(`${API_BASE_URL}/employees`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ department: departmentName, name: employeeName })
+    });
+    if (!response.ok) throw new Error('Failed to add employee');
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding employee:', error);
+    return {};
+  }
 }

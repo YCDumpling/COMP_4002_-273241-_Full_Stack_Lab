@@ -9,10 +9,9 @@ dotenv.config();
 
 const app: Express = express();
 
-// Middleware
 app.use(express.json());
 
-// CORS - Only allow frontend (Lab requirement: "Requests should only be accepted from the front-end")
+//add cors middleware
 app.use(cors(corsOptions));
 
 // Routes

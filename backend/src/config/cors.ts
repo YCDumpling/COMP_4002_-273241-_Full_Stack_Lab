@@ -9,6 +9,9 @@ const corsOptions: CorsOptions = {
             callback(null, true);
         } else if (origin === process.env.FRONTEND_URL) {
             callback(null, true);
+        } else if (origin && origin.includes('.vercel.app')) {
+            // Allow any Vercel deployment URL
+            callback(null, true);
         } else {
             callback(new Error("Not allowed by CORS restriction"), false);
         }
